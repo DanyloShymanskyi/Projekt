@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Top 10 Najlepiej Ocenianych</h2>
+<ol class="list-group list-group-numbered mt-3">
+    {% for film in films %}
+    <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="ms-2 me-auto">
+            <div class="fw-bold"><a href="{% url 'detail' film.pk %}">{{ film.title }}</a></div>
+            {{ film.genre }} (Liczba ocen: {{ film.review_count }})
+        </div>
+        <span class="badge bg-warning text-dark rounded-pill fs-6">{{ film.average_rating|default:"-" }} / 10</span>
+    </li>
+    {% empty %}
+    <p>Ranking jest pusty.</p>
+    {% endfor %}
+</ol>
+{% endblock %}
