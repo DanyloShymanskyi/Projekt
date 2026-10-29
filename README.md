@@ -1,8 +1,6 @@
 Markdown
 # System Oceniania Filmów i Seriali (Grupa 9)
-
 Aplikacja internetowa służąca do przeglądania oraz oceniania filmów i seriali. Wszystkie dane dotyczące użytkowników, ocen i produkcji są przechowywane w relacyjnej bazie danych SQLite.
-
 ## Autorzy projektu
 * **Myroslav Sobol** – Backend / Logika aplikacji (projekt Django, modele, baza danych, autoryzacja, panel administratora, system obliczania średnich ocen).
 * **Danylo Shymanskyi** – Frontend / Integracja / UX (szablony HTML, stylizacja za pomocą CSS i Bootstrap, wyświetlanie danych, zapewnienie responsywności).
