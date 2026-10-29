@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <h2 class="fw-bold m-0">Katalog Produkcji</h2>
+    <form method="get" class="d-flex gap-2">
+        <select name="kind" class="form-select bg-dark text-light border-secondary">
+            <option value="">Wszystkie typy</option>
+            <option value="film" {% if request.GET.kind == 'film' %}selected{% endif %}>Film</option>
+            <option value="serial" {% if request.GET.kind == 'serial' %}selected{% endif %}>Serial</option>
+        </select>
+        <button type="submit" class="btn btn-outline-light">Filtruj</button>
+    </form>
+</div>
+<div class="row g-4">
+    {% for film in films %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card h-100 shadow-sm">
+            {% if film.poster %}
+                <img src="{{ film.poster.url }}" class="card-img-top" alt="{{ film.title }}" style="height: 380px; object-fit: cover;">
+            {% else %}
+                <div class="bg-secondary d-flex align-items-center justify-content-center text-light" style="height: 380px;">Brak plakatu</div>
+            {% endif %}
+            
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold text-truncate" title="{{ film.title }}">{{ film.title }}</h5>
+                <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
+                    <span class="badge bg-secondary">{{ film.get_kind_display }}</span>
+                    <span class="badge badge-rating fs-6 px-2 py-1">{{ film.average_rating|default:"-" }} / 10</span>
+                </div>
+                <p class="card-text text-muted small mb-3">{{ film.genre }} &bull; {{ film.year }}</p>
+                <a href="{% url 'detail' film.pk %}" class="btn btn-primary w-100 mt-auto">Szczegóły</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <h4 class="text-muted">Brak produkcji w bazie.</h4>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

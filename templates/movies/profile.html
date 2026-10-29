@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Profil użytkownika: {{ request.user.username }}</h2>
+<h4 class="mt-4">Twoje recenzje:</h4>
+<div class="list-group">
+    {% for review in reviews %}
+        <a href="{% url 'detail' review.production.pk %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ review.production.title }}</h5>
+                <small>{{ review.created|date:"Y-m-d" }}</small>
+            </div>
+            <p class="mb-1">Twoja ocena: <strong>{{ review.rating }}/10</strong></p>
+            <small>{{ review.text }}</small>
+        </a>
+    {% empty %}
+        <p>Nie dodałeś jeszcze żadnych recenzji.</p>
+    {% endfor %}
+</div>
+{% endblock %}
