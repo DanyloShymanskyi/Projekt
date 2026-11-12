@@ -1,23 +1,10 @@
 from django.test import TestCase
-from django.test import Client, override_settings
+from django.test import Client
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 from .models import Production, Review
 
-# Puste szablony tylko do testów backendu. HTML należy do Danyla.
-templates = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'OPTIONS': {'loaders': [('django.template.loaders.locmem.Loader', {
-        name: '{{ form.errors }}' for name in [
-            'movies/catalog.html', 'movies/detail.html', 'movies/ranking.html',
-            'movies/profile.html', 'registration/register.html', 'registration/login.html',
-        ]
-    })]},
-}]
-
-
-@override_settings(TEMPLATES=templates)
 class BackendTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user('myroslav', password='Test-password-482!')
@@ -133,3 +120,41 @@ class BackendTests(TestCase):
         }]):
             self.assertEqual(self.client.get(reverse('admin:movies_production_changelist')).status_code, 200)
             self.assertEqual(self.client.get(reverse('admin:movies_review_changelist')).status_code, 200)
+
+    def test_admin_create_edit_delete_film(self):
+        admin = User.objects.create_superuser('admin', password='Admin-password-792!')
+        self.client.force_login(admin)
+        data = {
+            'title': 'Nowy film', 'description': 'Opis filmu',
+            'kind': 'film', 'genre': 'Dramat', 'year': 2026, 'poster': '',
+        }
+        response = self.client.post(reverse('admin:movies_production_add'), data)
+        self.assertEqual(response.status_code, 302)
+        film = Production.objects.get(title='Nowy film')
+        self.assertContains(self.client.get(reverse('detail', args=[film.pk])), 'Nowy film')
+
+        data['title'] = 'Zmieniony film'
+        response = self.client.post(reverse('admin:movies_production_change', args=[film.pk]), data)
+        self.assertEqual(response.status_code, 302)
+        film.refresh_from_db()
+        self.assertEqual(film.title, 'Zmieniony film')
+
+        Review.objects.create(production=film, user=self.user, rating=8)
+        url = reverse('admin:movies_production_delete', args=[film.pk])
+        self.client.get(url)
+        self.assertTrue(Production.objects.filter(pk=film.pk).exists())
+        response = self.client.post(url, {'post': 'yes'})
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Production.objects.filter(pk=film.pk).exists())
+        self.assertFalse(Review.objects.filter(production_id=film.pk).exists())
+
+    def test_user_cannot_change_films(self):
+        self.client.force_login(self.user)
+        for name in ['admin:movies_production_change', 'admin:movies_production_delete']:
+            response = self.client.post(reverse(name, args=[self.film.pk]), {'post': 'yes'})
+            self.assertEqual(response.status_code, 302)
+        response = self.client.post(reverse('admin:movies_production_add'), {'title': 'Obcy film'})
+        self.assertEqual(response.status_code, 302)
+        self.film.refresh_from_db()
+        self.assertEqual(self.film.title, 'Film A')
+        self.assertEqual(Production.objects.count(), 1)
