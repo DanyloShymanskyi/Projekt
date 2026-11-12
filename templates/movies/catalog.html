@@ -1,41 +1,50 @@
 {% extends 'base.html' %}
+{% block title %}Katalog — Ocena filmów{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-end mb-4">
-    <h2 class="fw-bold m-0">Katalog Produkcji</h2>
-    <form method="get" class="d-flex gap-2">
-        <select name="kind" class="form-select bg-dark text-light border-secondary">
-            <option value="">Wszystkie typy</option>
-            <option value="film" {% if request.GET.kind == 'film' %}selected{% endif %}>Film</option>
-            <option value="serial" {% if request.GET.kind == 'serial' %}selected{% endif %}>Serial</option>
+<h1>Filmy i seriale</h1>
+<p class="text-secondary">Wybierz tytuł, sprawdź opinie i dodaj swoją ocenę.</p>
+<form method="get" class="box row g-3 mb-4">
+    <div class="col-sm-4">
+        <label for="kind" class="form-label">Typ</label>
+        <select id="kind" name="kind" class="form-select">
+            <option value="">Wszystkie</option>
+            <option value="film" {% if kind == 'film' %}selected{% endif %}>Film</option>
+            <option value="serial" {% if kind == 'serial' %}selected{% endif %}>Serial</option>
         </select>
-        <button type="submit" class="btn btn-outline-light">Filtruj</button>
-    </form>
-</div>
+    </div>
+    <div class="col-sm-4">
+        <label for="genre" class="form-label">Gatunek</label>
+        <select id="genre" name="genre" class="form-select">
+            <option value="">Wszystkie</option>
+            {% for g in genres %}
+                <option value="{{ g }}" {% if genre == g %}selected{% endif %}>{{ g }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-sm-4 d-flex align-items-end gap-2">
+        <button class="btn btn-primary" type="submit">Filtruj</button>
+        <a class="btn btn-outline-secondary" href="{% url 'catalog' %}">Wyczyść</a>
+    </div>
+</form>
 <div class="row g-4">
     {% for film in films %}
-    <div class="col-6 col-md-4 col-lg-3">
-        <div class="card h-100 shadow-sm">
-            {% if film.poster %}
-                <img src="{{ film.poster.url }}" class="card-img-top" alt="{{ film.title }}" style="height: 380px; object-fit: cover;">
-            {% else %}
-                <div class="bg-secondary d-flex align-items-center justify-content-center text-light" style="height: 380px;">Brak plakatu</div>
-            {% endif %}
-            
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title fw-bold text-truncate" title="{{ film.title }}">{{ film.title }}</h5>
-                <div class="d-flex justify-content-between align-items-center mb-2 mt-1">
-                    <span class="badge bg-secondary">{{ film.get_kind_display }}</span>
-                    <span class="badge badge-rating fs-6 px-2 py-1">{{ film.average_rating|default:"-" }} / 10</span>
+        <div class="col-sm-6 col-lg-4">
+            <article class="card h-100">
+                {% if film.poster %}
+                    <img class="poster card-img-top" src="{{ film.poster }}" alt="Plakat: {{ film.title }}" loading="lazy">
+                {% else %}
+                    <div class="poster empty">Brak plakatu</div>
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="h5"><a href="{% url 'detail' film.pk %}">{{ film.title }}</a></h2>
+                    <p class="text-secondary">{{ film.get_kind_display }} · {{ film.genre }} · {{ film.year }}</p>
+                    <p>{{ film.description|truncatewords:25 }}</p>
+                    <p class="mb-0"><strong>{% if film.average_rating %}{{ film.average_rating|floatformat:1 }} / 10{% else %}Brak ocen{% endif %}</strong></p>
                 </div>
-                <p class="card-text text-muted small mb-3">{{ film.genre }} &bull; {{ film.year }}</p>
-                <a href="{% url 'detail' film.pk %}" class="btn btn-primary w-100 mt-auto">Szczegóły</a>
-            </div>
+            </article>
         </div>
-    </div>
     {% empty %}
-    <div class="col-12 text-center py-5">
-        <h4 class="text-muted">Brak produkcji w bazie.</h4>
-    </div>
+        <p>Brak filmów i seriali do wyświetlenia.</p>
     {% endfor %}
 </div>
 {% endblock %}

@@ -1,17 +1,21 @@
 {% extends 'base.html' %}
+{% block title %}Ranking — Ocena filmów{% endblock %}
 {% block content %}
-<h2>Top 10 Najlepiej Ocenianych</h2>
-<ol class="list-group list-group-numbered mt-3">
-    {% for film in films %}
-    <li class="list-group-item d-flex justify-content-between align-items-start">
-        <div class="ms-2 me-auto">
-            <div class="fw-bold"><a href="{% url 'detail' film.pk %}">{{ film.title }}</a></div>
-            {{ film.genre }} (Liczba ocen: {{ film.review_count }})
+<h1>Ranking Top 10</h1>
+<p class="text-secondary">Najwyżej oceniane filmy i seriale.</p>
+{% for film in films %}
+    <article class="box mb-3 d-flex flex-wrap align-items-center gap-3">
+        <span class="h4 mb-0">{{ forloop.counter }}.</span>
+        <div class="me-auto">
+            <h2 class="h5"><a href="{% url 'detail' film.pk %}">{{ film.title }}</a></h2>
+            <p class="mb-0 text-secondary">{{ film.get_kind_display }} · {{ film.genre }} · {{ film.year }}</p>
         </div>
-        <span class="badge bg-warning text-dark rounded-pill fs-6">{{ film.average_rating|default:"-" }} / 10</span>
-    </li>
-    {% empty %}
-    <p>Ranking jest pusty.</p>
-    {% endfor %}
-</ol>
+        <div>
+            <strong>{{ film.average_rating|floatformat:1 }} / 10</strong>
+            <p class="mb-0 small text-secondary">Liczba ocen: {{ film.review_count }}</p>
+        </div>
+    </article>
+{% empty %}
+    <p>Ranking pojawi się po dodaniu pierwszych ocen.</p>
+{% endfor %}
 {% endblock %}

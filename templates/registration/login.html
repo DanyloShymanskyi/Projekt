@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
+{% block title %}Logowanie — Ocena filmów{% endblock %}
 {% block content %}
-<h2>Logowanie</h2>
-<form method="post" class="mt-3">
-    {% csrf_token %}
-    {{ form.as_p }}
-    {% if next %}
+<section class="box account">
+    <h1 class="h3">Logowanie</h1>
+    <form class="form" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
         <input type="hidden" name="next" value="{{ next }}">
-    {% endif %}
-    <button type="submit" class="btn btn-primary">Zaloguj</button>
-</form>
+        <button class="btn btn-primary" type="submit">Zaloguj się</button>
+    </form>
+    <p class="mt-3 mb-0">Nie masz konta? <a href="{% url 'register' %}">Zarejestruj się</a>.</p>
+</section>
 {% endblock %}
