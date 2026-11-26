@@ -3,6 +3,7 @@
 {% block content %}
 <h1>Twój profil</h1>
 <p>Zalogowany użytkownik: <strong>{{ user.username }}</strong></p>
+{% include 'movies/bookings.html' %}
 <h2 class="h4">Twoje oceny i opinie</h2>
 {% for review in reviews %}
     <article class="box mb-3">

@@ -17,6 +17,7 @@
         <div>{{ film.description|linebreaks }}</div>
     </div>
 </div>
+{% include 'movies/screenings.html' %}
 <section class="box mb-4">
     <h2 class="h4">Twoja ocena</h2>
     {% if user.is_authenticated %}

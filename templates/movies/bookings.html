@@ -1,0 +1,26 @@
+<section class="mb-4">
+    <h2 class="h4">Moje zapisy na seanse</h2>
+    {% if shows_ready %}
+        {% for show in my_shows %}
+            <article class="box mb-3">
+                <h3 class="h5"><a href="{% url 'detail' show.film.pk %}#seanse">{{ show.film.title }}</a></h3>
+                <p>{{ show.date|date:'d.m.Y H:i' }} · {{ show.place }}</p>
+                {% url 'leave_show' show.pk as leave_url %}
+                {% if show.closed %}
+                    <p class="mb-0 text-secondary">Zapisy na ten seans są zamknięte.</p>
+                {% elif leave_url %}
+                    <form method="post" action="{{ leave_url }}">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-light" type="submit">Anuluj zapis</button>
+                    </form>
+                {% else %}
+                    <p class="mb-0 text-secondary">Anulowanie zapisu jest chwilowo niedostępne.</p>
+                {% endif %}
+            </article>
+        {% empty %}
+            <p>Nie masz zapisów na seanse. <a href="{% url 'catalog' %}">Przejdź do katalogu</a>.</p>
+        {% endfor %}
+    {% else %}
+        <p class="text-secondary">Zapisy na seanse nie są jeszcze dostępne.</p>
+    {% endif %}
+</section>
