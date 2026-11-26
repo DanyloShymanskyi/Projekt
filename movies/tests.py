@@ -158,3 +158,46 @@ class BackendTests(TestCase):
         self.film.refresh_from_db()
         self.assertEqual(self.film.title, 'Film A')
         self.assertEqual(Production.objects.count(), 1)
+
+    def test_review_does_not_change_other_users_rating(self):
+        other = Review.objects.create(
+            production=self.film, user=self.other, rating=4, text='Opinia drugiej osoby',
+        )
+        self.client.force_login(self.user)
+        response = self.client.post(self.url, {
+            'rating': 10, 'text': 'Moja opinia', 'id': other.pk, 'user': self.other.pk,
+        })
+        self.assertRedirects(response, reverse('detail', args=[self.film.pk]))
+        other.refresh_from_db()
+        self.assertEqual(other.rating, 4)
+        self.assertEqual(other.text, 'Opinia drugiej osoby')
+        self.assertEqual(self.film.reviews.count(), 2)
+        self.assertEqual(self.film.average(), 7)
+
+    def test_invalid_update_keeps_saved_review(self):
+        review = Review.objects.create(
+            production=self.film, user=self.user, rating=8, text='Moja opinia',
+        )
+        self.client.force_login(self.user)
+        for data in [{'rating': 11, 'text': 'Zmiana'}, {'rating': 5, 'text': 'a' * 5001}]:
+            self.assertEqual(self.client.post(self.url, data).status_code, 400)
+            review.refresh_from_db()
+            self.assertEqual(review.rating, 8)
+            self.assertEqual(review.text, 'Moja opinia')
+        self.assertEqual(self.film.reviews.count(), 1)
+
+    def test_rating_limits_and_optional_text(self):
+        self.client.force_login(self.user)
+        for rating in [1, 10]:
+            response = self.client.post(self.url, {'rating': rating, 'text': ''})
+            self.assertRedirects(response, reverse('detail', args=[self.film.pk]))
+            review = Review.objects.get(production=self.film, user=self.user)
+            self.assertEqual(review.rating, rating)
+            self.assertEqual(review.text, '')
+        self.assertEqual(self.film.reviews.count(), 1)
+
+    def test_review_for_missing_film(self):
+        self.client.force_login(self.user)
+        url = reverse('add_review', args=[999])
+        self.assertEqual(self.client.post(url, {'rating': 8}).status_code, 404)
+        self.assertEqual(Review.objects.count(), 0)
